@@ -246,6 +246,21 @@ bm_wl_window_schedule_render(struct window *window)
     wl_surface_commit(window->surface);
 }
 
+
+static uint32_t
+get_window_width(struct window *window)
+{
+    uint32_t width = window->width * ((window->width_factor != 0) ? window->width_factor : 1);
+
+    if(width > window->width - 2 * window->hmargin_size)
+        width = window->width - 2 * window->hmargin_size;
+
+    if(width < WINDOW_MIN_WIDTH || 2 * window->hmargin_size > window->width)
+        width = WINDOW_MIN_WIDTH;
+
+    return width;
+}
+
 void
 bm_wl_window_render(struct window *window, struct wl_display *display, struct bm_menu *menu)
 {
@@ -269,7 +284,7 @@ bm_wl_window_render(struct window *window, struct wl_display *display, struct bm
             break;
 
         window->height = ceil(result.height / window->scale);
-        zwlr_layer_surface_v1_set_size(window->layer_surface, window->width, window->height);
+        zwlr_layer_surface_v1_set_size(window->layer_surface, get_window_width(window), window->height);
         destroy_buffer(buffer);
     }
 
@@ -327,20 +342,6 @@ layer_surface_closed(void *data, struct zwlr_layer_surface_v1 *layer_surface)
     zwlr_layer_surface_v1_destroy(layer_surface);
     wl_surface_destroy(window->surface);
     exit(1);
-}
-
-static uint32_t
-get_window_width(struct window *window)
-{
-    uint32_t width = window->width * ((window->width_factor != 0) ? window->width_factor : 1);
-
-    if(width > window->width - 2 * window->hmargin_size)
-        width = window->width - 2 * window->hmargin_size;
-
-    if(width < WINDOW_MIN_WIDTH || 2 * window->hmargin_size > window->width)
-        width = WINDOW_MIN_WIDTH;
-
-    return width;
 }
 
 static void
